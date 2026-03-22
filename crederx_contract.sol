@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -7,7 +6,7 @@ contract DecisionAudit {
 
 
     address public owner;
-
+    mapping(address => bool) public authorized;
     mapping (bytes32 => uint256) public  decisionRecords;
 
     event DecisionHashStored(
@@ -21,11 +20,20 @@ contract DecisionAudit {
         owner = msg.sender;
     }
     
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not authorized ");
-        _;
-    }
-    function storeDecisionHash(bytes32 decisionHash) external onlyOwner{
+    function addAuthorized(address _user) external {
+    require(msg.sender == owner, "Only owner");
+    authorized[_user] = true;
+}
+
+
+   modifier onlyAuthorized() {
+    require(
+        msg.sender == owner || authorized[msg.sender],
+        "Not authorized"
+    );
+    _;
+}
+    function storeDecisionHash(bytes32 decisionHash) external onlyAuthorized{
 
         require(decisionRecords[decisionHash] == 0, "Hash already exists");
 
